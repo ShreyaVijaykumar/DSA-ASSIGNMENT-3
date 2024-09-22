@@ -1,0 +1,386 @@
+// Question 1
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+struct Node {
+char data[50];
+struct Node* next;
+};
+struct Node* createNode(char* name) {
+struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+strcpy(newNode->data, name);
+newNode->next = NULL;
+return newNode;
+}
+void append(struct Node** head, char* name) {
+struct Node* newNode = createNode(name);
+if (*head == NULL) {
+*head = newNode;
+} else {
+struct Node* temp = *head;
+while (temp->next != NULL) {
+temp = temp->next;
+}
+temp->next = newNode;
+}
+}
+void insert(struct Node** head, char* name, int position) {
+struct Node* newNode = createNode(name);
+if (position == 0) {
+newNode->next = *head;
+*head = newNode;
+} else {
+struct Node* temp = *head;
+for (int i = 0; i < position - 1; i++) {
+if (temp == NULL) {
+printf("Position out of bounds\n");
+return;
+}
+temp = temp->next;
+}
+newNode->next = temp->next;
+temp->next = newNode;
+}
+}
+void deleteContact(struct Node** head, char* name, int position) {
+if (position != -1) {
+if (position == 0 && *head != NULL) {
+struct Node* temp = *head;
+*head = (*head)->next;
+free(temp);
+} else {
+struct Node* temp = *head;
+for (int i = 0; i < position - 1; i++) {
+if (temp == NULL || temp->next == NULL) {
+printf("Position out of bounds\n");
+return;
+}
+temp = temp->next;
+}
+struct Node* delNode = temp->next;
+temp->next = delNode->next;
+free(delNode);
+}
+} else {
+struct Node* temp = *head;
+struct Node* prev = NULL;
+while (temp != NULL && strcmp(temp->data, name) != 0) {
+prev = temp;
+temp = temp->next;
+}
+if (temp == NULL) {
+printf("Contact not found\n");
+return;
+}
+if (prev == NULL) {
+*head = temp->next;
+} else {
+prev->next = temp->next;
+}
+free(temp);
+}
+}
+void displayContacts(struct Node* head) {
+if (head == NULL) {
+printf("Contact list is empty\n");
+return;
+}
+struct Node* temp = head;
+printf("Contact list: ");
+while (temp != NULL) {
+printf("%s -> ", temp->data);
+temp = temp->next;
+}
+printf("NULL\n");
+}
+void search(struct Node* head, char* name) {
+struct Node* temp = head;
+int position = 0;
+while (temp != NULL) {
+if (strcmp(temp->data, name) == 0) {
+printf("%s found at position %d\n", name, position);
+return;
+}
+temp = temp->next;
+position++;
+}
+printf("%s not found in the contact list\n", name);
+}
+int main() {
+struct Node* head = NULL;
+int choice, numContacts, position;
+char name[50];
+char deleteOption;
+do {
+printf("\n1. Create the list of contacts\n");
+printf("2. Insert a new contact\n");
+printf("3. Delete a contact\n");
+printf("4. Display contact list\n");
+printf("5. Search for a contact\n");
+printf("6. Exit\n");
+printf("Enter your choice: ");
+scanf("%d", &choice);
+switch (choice) {
+case 1:
+printf("Enter the number of contacts: ");
+scanf("%d", &numContacts);
+for (int i = 0; i < numContacts; i++) {
+printf("Enter contact name %d: ", i + 1);
+scanf("%s", name);
+append(&head, name);
+}
+displayContacts(head);
+break;
+case 2:
+printf("Enter the contact's name to insert: ");
+scanf("%s", name);
+printf("Enter the position (0-based index) to insert the contact: ");
+scanf("%d", &position);
+insert(&head, name, position);
+displayContacts(head);
+break;
+case 3:
+printf("Delete by name or position? (n/p): ");
+scanf(" %c", &deleteOption);
+if (deleteOption == 'n') {
+printf("Enter the contact's name to delete: ");
+scanf("%s", name);
+deleteContact(&head, name, -1);
+} else if (deleteOption == 'p') {
+printf("Enter the position to delete: ");
+scanf("%d", &position);
+deleteContact(&head, "", position);
+} else {
+printf("Invalid option.\n");
+}
+displayContacts(head);
+break;
+case 4:
+displayContacts(head);
+break;
+case 5:
+printf("Enter the contact's name to search: ");
+scanf("%s", name);
+search(head, name);
+break;
+case 6:
+printf("Exiting the program...\n");
+break;
+default:
+printf("Invalid choice! Please try again.\n");
+}
+} while (choice != 6);
+return 0;
+}
+
+// Question 2
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef struct Node {
+char name[50];
+struct Node *prev;
+struct Node *next;
+} Node;
+Node *head = NULL;
+Node* createNode(char name[]) {
+Node *newNode = (Node*)malloc(sizeof(Node));
+strcpy(newNode->name, name);
+newNode->prev = NULL;
+newNode->next = NULL;
+return newNode;
+}
+void displayForward() {
+Node *temp = head;
+if (temp == NULL) {
+printf("List is empty.\n");
+return;
+}
+printf("Contacts (Forward Traversal):\n");
+while (temp != NULL) {
+printf("%s -> ", temp->name);
+temp = temp->next;
+}
+printf("NULL\n");
+}
+void displayBackward() {
+Node *temp = head;
+if (temp == NULL) {
+printf("List is empty.\n");
+return;
+}
+while (temp->next != NULL)
+temp = temp->next;
+printf("Contacts (Backward Traversal):\n");
+while (temp != NULL) {
+printf("%s -> ", temp->name);
+temp = temp->prev;
+}
+printf("NULL\n");
+}
+void insertAtEnd(char name[]) {
+Node *newNode = createNode(name);
+if (head == NULL) {
+head = newNode;
+} else {
+Node *temp = head;
+while (temp->next != NULL)
+temp = temp->next;
+temp->next = newNode;
+newNode->prev = temp;
+}
+displayForward();
+}
+void insertAtPosition(char name[], int pos) {
+Node *newNode = createNode(name);
+if (pos == 1) {
+newNode->next = head;
+if (head != NULL)
+head->prev = newNode;
+head = newNode;
+} else {
+Node *temp = head;
+int i = 1;
+while (temp != NULL && i < pos - 1) {
+temp = temp->next;
+i++;
+}
+if (temp == NULL) {
+printf("Position out of bounds.\n");
+return;
+}
+newNode->next = temp->next;
+if (temp->next != NULL)
+temp->next->prev = newNode;
+temp->next = newNode;
+newNode->prev = temp;
+}
+displayForward();
+}
+void deleteByPosition(int pos) {
+if (head == NULL) {
+printf("List is empty.\n");
+return;
+}
+Node *temp = head;
+if (pos == 1) {
+head = temp->next;
+if (head != NULL)
+head->prev = NULL;
+free(temp);
+} else {
+int i = 1;
+while (temp != NULL && i < pos) {
+temp = temp->next;
+i++;
+}
+if (temp == NULL) {
+printf("Position out of bounds.\n");
+return;
+}
+if (temp->next != NULL)
+temp->next->prev = temp->prev;
+if (temp->prev != NULL)
+temp->prev->next = temp->next;
+free(temp);
+}
+displayForward();
+}
+void deleteByName(char name[]) {
+if (head == NULL) {
+printf("List is empty.\n");
+return;
+}
+Node *temp = head;
+while (temp != NULL) {
+if (strcmp(temp->name, name) == 0) {
+if (temp->prev != NULL)
+temp->prev->next = temp->next;
+else
+head = temp->next;
+if (temp->next != NULL)
+temp->next->prev = temp->prev;
+free(temp);
+displayForward();
+return;
+}
+temp = temp->next;
+}
+printf("Contact not found.\n");
+}
+void searchContact(char name[]) {
+Node *temp = head;
+int pos = 1;
+while (temp != NULL) {
+if (strcmp(temp->name, name) == 0) {
+printf("Contact '%s' found at position %d.\n", name, pos);
+return;
+}
+temp = temp->next;
+pos++;
+}
+printf("Contact '%s' not found.\n", name);
+}
+int main() {
+int choice, pos;
+char name[50];
+do {
+printf("\nContact Management System\n");
+printf("1. Create list\n");
+printf("2. Insert a new contact\n");
+printf("3. Delete a contact\n");
+printf("4. Traverse list (forward and backward)\n");
+printf("5. Search for a contact\n");
+printf("6. Exit\n");
+printf("Enter your choice: ");
+scanf("%d", &choice);
+switch (choice) {
+case 1:
+printf("Enter contact name (type 'done' to stop): ");
+while (1) {
+scanf("%s", name);
+if (strcmp(name, "done") == 0)
+break;
+insertAtEnd(name);
+}
+break;
+case 2:
+printf("Enter contact name: ");
+scanf("%s", name);
+printf("Enter position to insert: ");
+scanf("%d", &pos);
+insertAtPosition(name, pos);
+break;
+case 3:
+printf("Delete by (1) Position or (2) Name? ");
+scanf("%d", &pos);
+if (pos == 1) {
+printf("Enter position to delete: ");
+scanf("%d", &pos);
+deleteByPosition(pos);
+} else if (pos == 2) {
+printf("Enter contact name to delete: ");
+scanf("%s", name);
+deleteByName(name);
+} else {
+printf("Invalid choice.\n");
+}
+break;
+case 4:
+displayForward();
+displayBackward();
+break;
+case 5:
+printf("Enter contact name to search: ");
+scanf("%s", name);
+searchContact(name);
+break;
+case 6:
+printf("Exiting...\n");
+break;
+default:
+printf("Invalid choice.\n");
+}
+} while (choice != 6);
+return 0;
+}
